@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Special Message</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f8f8f8;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .background-img {
+        position: absolute;
+        width: 420px;
+        max-width: 90%;
+        z-index: -1;
+        transition: transform 0.6s ease, opacity 0.6s ease;
+    }
+
+    .burst {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+
+    .open-bg {
+        position: absolute;
+        width: 450px;
+        max-width: 95%;
+        display: none;
+        z-index: -1;
+    }
+
+    .container {
+        position: relative;
+        width: 320px;
+        max-width: 80%;
+        text-align: center;
+    }
+
+    h1 {
+        font-family: Arial, sans-serif;
+        font-size: 20px;
+    }
+
+    .button-wrapper {
+        display: inline-block;
+        position: relative;
+        margin: 10px;
+        cursor: pointer;
+    }
+
+    .button-wrapper img {
+        width: 120px;
+    }
+
+    .cross {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 60px;
+        color: red;
+        display: none;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        20% { transform: translateX(-8px); }
+        40% { transform: translateX(8px); }
+        60% { transform: translateX(-6px); }
+        80% { transform: translateX(6px); }
+        100% { transform: translateX(0); }
+    }
+
+    .shake {
+        animation: shake 0.5s;
+    }
+
+    /* Letter styling */
+    #letter {
+        display: none;
+        font-family: 'Special Elite', monospace;
+        font-size: 16px;
+        color: #333;
+        line-height: 1.5;
+        padding: 20px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+    }
+
+    /* Cat GIF floating */
+    .cat-gif {
+        width: 80px;
+        margin-bottom: 15px;
+        animation: float 3s ease-in-out infinite;
+        display: none; /* show after envelope opens */
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    /* Text + cursor container */
+    #typedText-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    /* Pink cursor */
+    .cursor {
+        display: none; /* hidden until envelope opens */
+        width: 2px;
+        height: 18px;
+        background-color: pink;
+        vertical-align: bottom;
+        animation: blink 1s infinite;
+        margin-left: 2px;
+    }
+
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
+    /* Hearts floating */
+    .hearts {
+        font-size: 18px;
+        color: red;
+        margin-top: 10px;
+        position: relative;
+        display: none;
+        animation: floatHearts 2s ease-out forwards;
+    }
+
+    @keyframes floatHearts {
+        0% { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(-50px); opacity: 0; }
+    }
+</style>
+</head>
+<body>
+
+<img src="envelope.jpeg" class="background-img" id="envelope">
+<img src="window.jpeg" class="open-bg" id="openMessage">
+
+<audio id="popSound">
+    <source src="pop.wav" type="audio/mpeg">
+</audio>
+<audio id="typeSound">
+    <source src="typewriter.wav" type="audio/mpeg">
+</audio>
+
+<div class="container">
+
+    <div id="question">
+        <h1>You have a message 💌</h1>
+
+        <div class="button-wrapper" id="yesBtn">
+            <img src="yes.png">
+        </div>
+
+        <div class="button-wrapper" id="noBtn">
+            <img src="no.png">
+            <div class="cross">✖</div>
+        </div>
+    </div>
+
+    <div id="letter">
+        <img src="cat_heart.gif" class="cat-gif" id="catGif">
+        <div id="typedText-container">
+            <span id="typedText"></span><span class="cursor" id="cursor"></span>
+        </div>
+        <div class="hearts" id="hearts">❤️ ❤️</div>
+    </div>
+
+</div>
+
+<script>
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const question = document.getElementById("question");
+const letter = document.getElementById("letter");
+const cross = document.querySelector(".cross");
+const envelope = document.getElementById("envelope");
+const openMessage = document.getElementById("openMessage");
+const popSound = document.getElementById("popSound");
+const typeSound = document.getElementById("typeSound");
+const typedText = document.getElementById("typedText");
+const hearts = document.getElementById("hearts");
+const catGif = document.getElementById("catGif");
+const cursor = document.getElementById("cursor");
+
+const message = "Good luck on your exam today mi amor! You'll do well, I love you!";
+
+// Typewriter function
+function typeWriter(text, i = 0) {
+    if (i < text.length) {
+        typedText.innerHTML += text.charAt(i);
+        typeSound.currentTime = 0;
+        typeSound.play().catch(() => {});
+        setTimeout(() => typeWriter(text, i + 1), 150);
+    } else {
+        typeSound.pause();
+        cursor.style.display = "none"; // hide cursor
+        hearts.style.display = "block"; // show hearts
+    }
+}
+
+// No button shake
+noBtn.addEventListener("click", function() {
+    cross.style.display = "block";
+    noBtn.classList.add("shake");
+    setTimeout(() => noBtn.classList.remove("shake"), 500);
+});
+
+// Yes button opens envelope
+yesBtn.addEventListener("click", function() {
+    popSound.currentTime = 0;
+    popSound.play().catch(() => {});
+    envelope.classList.add("burst");
+
+    setTimeout(() => {
+        envelope.style.display = "none";
+        openMessage.style.display = "block";
+        question.style.display = "none";
+        letter.style.display = "flex";
+
+        // Show cat and cursor
+        catGif.style.display = "block";
+        cursor.style.display = "inline-block";
+
+        // Start typing after 500ms delay for pop sound
+        typedText.innerHTML = "";
+        setTimeout(() => typeWriter(message), 500);
+
+    }, 600);
+});
+</script>
+
+</body>
+</html>
